@@ -1,0 +1,112 @@
+* { box-sizing: border-box; }
+:root {
+  --bg1: #0f172a; --bg2: #1e1b4b; --card: rgba(255,255,255,.07);
+  --text: #f1f5f9; --muted: #94a3b8; --accent: #6366f1; --accent2: #22d3ee;
+  --ok: #22c55e; --bad: #ef4444;
+}
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--bg1), var(--bg2)) fixed;
+}
+.screen { display: none; max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; text-align: center; }
+.screen.active { display: block; animation: fade .3s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.hero { margin: 32px 0 24px; }
+.globe { font-size: 72px; animation: spin 8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.logo {
+  font-size: 48px; margin: 8px 0;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.subtitle, .muted { color: var(--muted); }
+
+.card {
+  background: var(--card); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px; padding: 20px; backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; gap: 12px; text-align: center;
+}
+.card.wide { margin: 16px 0; overflow-x: auto; }
+
+input {
+  width: 100%; padding: 14px; font-size: 16px; color: var(--text);
+  background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px; outline: none;
+}
+input:focus { border-color: var(--accent2); }
+.code-input { text-align: center; letter-spacing: 8px; font-size: 28px; text-transform: uppercase; font-weight: 700; }
+
+.btn {
+  padding: 12px 18px; font-size: 16px; font-weight: 600; border: none; border-radius: 12px;
+  color: var(--text); cursor: pointer; transition: transform .1s, filter .15s;
+}
+.btn:hover { filter: brightness(1.12); }
+.btn:active { transform: scale(.97); }
+.btn.big { padding: 16px; font-size: 18px; }
+.btn.primary { background: linear-gradient(90deg, var(--accent), #8b5cf6); }
+.btn.secondary { background: linear-gradient(90deg, #0891b2, var(--accent2)); color: #04222b; }
+.btn.ghost { background: rgba(255,255,255,.08); }
+.hidden { display: none !important; }
+.error { color: #fca5a5; min-height: 20px; margin: 0; }
+
+.tabs { display: flex; gap: 8px; }
+.tab { flex: 1; padding: 10px; border: none; border-radius: 10px; background: rgba(255,255,255,.06); color: var(--muted); font-size: 15px; cursor: pointer; }
+.tab.active { background: var(--accent); color: #fff; }
+.divider { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+
+.big-code {
+  font-size: 56px; font-weight: 800; letter-spacing: 10px; color: var(--accent2);
+  background: rgba(0,0,0,.25); border-radius: 14px; padding: 12px 0;
+}
+.players { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.players li { background: rgba(255,255,255,.08); padding: 10px 14px; border-radius: 10px; text-align: left; }
+.crown { margin-left: 6px; }
+
+/* Игра */
+.game-top { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; color: var(--muted); }
+.timer { height: 8px; background: rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; }
+#timerbar { height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+.flag-wrap { display: flex; justify-content: center; margin: 12px 0 20px; }
+#flag {
+  max-width: 100%; width: 320px; max-height: 240px; object-fit: contain;
+  border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.5); background: rgba(255,255,255,.05); min-height: 100px;
+}
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.opt {
+  padding: 18px 10px; font-size: 17px; font-weight: 600; border-radius: 14px; cursor: pointer;
+  color: var(--text); background: rgba(255,255,255,.09); border: 2px solid rgba(255,255,255,.12);
+  transition: background .15s, transform .1s; min-height: 64px;
+}
+.opt:hover:not(:disabled) { background: rgba(255,255,255,.17); }
+.opt:disabled { cursor: default; opacity: .85; }
+.opt.selected { border-color: var(--accent2); background: rgba(34,211,238,.18); }
+.opt.correct { background: rgba(34,197,94,.35); border-color: var(--ok); opacity: 1; }
+.opt.wrong { background: rgba(239,68,68,.35); border-color: var(--bad); opacity: 1; }
+.status { min-height: 26px; margin: 16px 0 4px; font-size: 18px; }
+.scoreboard { list-style: none; padding: 0; margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+@media (max-width: 480px) { .options { grid-template-columns: 1fr; } .logo { font-size: 38px; } }
+
+/* Результаты */
+.podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 24px 0 8px; }
+.pl { flex: 1; max-width: 170px; border-radius: 14px 14px 0 0; padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pl .medal { font-size: 36px; }
+.pl .nm { font-weight: 700; word-break: break-word; }
+.pl .sc { font-size: 13px; color: rgba(255,255,255,.85); }
+.pl.p1 { height: 190px; background: linear-gradient(180deg, #f59e0b, #b45309); }
+.pl.p2 { height: 150px; background: linear-gradient(180deg, #94a3b8, #475569); }
+.pl.p3 { height: 120px; background: linear-gradient(180deg, #c2764a, #7c4a2b); }
+.my-place { font-size: 20px; font-weight: 700; margin: 8px 0; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,.08); }
+td:nth-child(2), th:nth-child(2) { text-align: left; }
+tr.me td { color: var(--accent2); font-weight: 700; }
+
+/* История */
+.history { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.hitem { background: var(--card); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 14px; text-align: left; }
+.hitem .row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.hitem .place { font-size: 20px; font-weight: 800; }
+.hitem .small { color: var(--muted); font-size: 13px; margin-top: 6px; }
