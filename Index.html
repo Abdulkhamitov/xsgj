@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Угадай флаг</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Титульный лист + регистрация / вход -->
+  <section id="screen-title" class="screen active">
+    <div class="hero">
+      <div class="globe">🌍</div>
+      <h1 class="logo">Угадай флаг</h1>
+      <p class="subtitle">Викторина по флагам всего мира. Играй один или с друзьями!</p>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <button id="tab-login" class="tab active">Вход</button>
+        <button id="tab-register" class="tab">Регистрация</button>
+      </div>
+      <input id="auth-username" type="text" placeholder="Имя игрока" maxlength="20" autocomplete="username">
+      <input id="auth-password" type="password" placeholder="Пароль" autocomplete="current-password">
+      <button id="auth-submit" class="btn primary">Войти</button>
+      <p id="auth-error" class="error"></p>
+    </div>
+  </section>
+
+  <!-- Главное меню -->
+  <section id="screen-menu" class="screen">
+    <h2>Привет, <span id="hello"></span>! 👋</h2>
+    <div class="card menu">
+      <button id="btn-solo" class="btn primary big">🎯 Играть одному</button>
+      <button id="btn-friends" class="btn secondary big">👥 Играть с друзьями</button>
+      <button id="btn-history" class="btn ghost big">📊 Мои игры</button>
+      <button id="btn-logout" class="btn ghost">Выйти</button>
+    </div>
+  </section>
+
+  <!-- Игра с друзьями: создать / войти по коду -->
+  <section id="screen-friends" class="screen">
+    <h2>Игра с друзьями</h2>
+    <div class="card">
+      <button id="btn-create-lobby" class="btn primary big">➕ Создать лобби</button>
+      <div class="divider">или введи код друга</div>
+      <input id="join-code" type="text" placeholder="КОД" maxlength="5" class="code-input">
+      <button id="btn-join-lobby" class="btn secondary big">Присоединиться</button>
+      <p id="friends-error" class="error"></p>
+      <button id="btn-friends-back" class="btn ghost">← Назад</button>
+    </div>
+  </section>
+
+  <!-- Лобби -->
+  <section id="screen-lobby" class="screen">
+    <h2>Лобби</h2>
+    <div class="card">
+      <p class="muted">Код подключения — отправь его друзьям:</p>
+      <div id="lobby-code" class="big-code">-----</div>
+      <h3>Игроки (<span id="lobby-count">0</span>)</h3>
+      <ul id="lobby-players" class="players"></ul>
+      <button id="btn-start" class="btn primary big hidden">▶ Начать игру</button>
+      <p id="lobby-wait" class="muted hidden">Ждём, пока создатель начнёт игру…</p>
+      <button id="btn-lobby-leave" class="btn ghost">Выйти из лобби</button>
+    </div>
+  </section>
+
+  <!-- Игра -->
+  <section id="screen-game" class="screen">
+    <div class="game-top">
+      <span id="qnum">Вопрос</span>
+      <div class="timer"><div id="timerbar"></div></div>
+    </div>
+    <div class="flag-wrap"><img id="flag" alt="Флаг"></div>
+    <div id="options" class="options"></div>
+    <p id="status" class="status"></p>
+    <ul id="scoreboard" class="scoreboard"></ul>
+  </section>
+
+  <!-- Результаты -->
+  <section id="screen-results" class="screen">
+    <h2>🏁 Итоги игры</h2>
+    <div id="podium" class="podium"></div>
+    <p id="my-place" class="my-place"></p>
+    <div class="card wide">
+      <table id="results-table">
+        <thead><tr><th>Место</th><th>Игрок</th><th>Верно</th><th>Время</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button id="btn-results-menu" class="btn primary big">В меню</button>
+  </section>
+
+  <!-- История -->
+  <section id="screen-history" class="screen">
+    <h2>📊 Мои игры</h2>
+    <div id="history-list" class="history"></div>
+    <button id="btn-history-back" class="btn ghost">← Назад</button>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
