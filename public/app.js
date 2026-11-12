@@ -278,45 +278,68 @@
     show('menu');
   };
   
-  // ---------- Результаты ----------
   function renderResults(e) {
-    const r = e.ranking;
+  // Адаптируем данные: если пришли из истории, структура немного другая
+    const r = e.ranking || e.players; 
+    const totalQuestions = e.total || e.total_questions;
+    
     const byPlace = n => r.find(x => x.place === n);
     const order = [2, 1, 3];
+    
+  // Отрисовка пьедестала
     $('#podium').innerHTML = order
       .map(n => byPlace(n))
       .filter(Boolean)
       .map(p => `<div class="pl p${p.place}">
           <div class="medal">${medal(p.place)}</div>
           <div class="nm">${esc(p.username)}</div>
-          <div class="sc">${p.correct}/${e.total} • ${fmtTime(p.totalMs)}</div>
+          <div class="sc">${p.correct}/${totalQuestions} • ${fmtTime(p.totalMs || p.total_time_ms)}</div>
         </div>`)
       .join('');
-    const mine = r.find(x => x.id === me.id);
-    let myText = mine ? `Твоё место: ${mine.place} из ${r.length} • ${mine.correct}/${e.total} верно` : '';
-    if (mine && typeof mine.mmrDelta === 'number') {
-      const sign = mine.mmrDelta >= 0 ? '+' : '';
-      myText += ` • MMR ${sign}${mine.mmrDelta} → ${mine.mmr}`;
+      
+    const mine = r.find(x => x.id === me.id || x.username === me.username);
+    
+  // Текст с личным результатом
+    let myText = mine ? `Твоё место: ${mine.place} из ${r.length} • ${mine.correct}/${totalQuestions} верно` : '';
+    
+  // Если это из истории, показываем MMR из сохраненной игры, иначе из текущей сессии
+    const delta = mine.mmrDelta ?? mine.mmr_delta;
+    const newMmr = mine.mmr ?? mine.mmr_after;
+    
+    if (mine && typeof delta === 'number') {
+      const sign = delta >= 0 ? '+' : '';
+      myText += ` • MMR ${sign}${delta} → ${newMmr}`;
     }
     $('#my-place').textContent = myText;
+
+  // Таблица
     $('#results-table tbody').innerHTML = r
       .map(p => {
-        const sign = (p.mmrDelta ?? 0) >= 0 ? '+' : '';
-        const mmrCell = (typeof p.mmrDelta === 'number')
-          ? `<td>${sign}${p.mmrDelta} (${p.mmr})</td>` : '<td>—</td>';
-        return `<tr class="${p.id === me.id ? 'me' : ''}">
-          <td>${medal(p.place)}</td><td>${esc(p.username)}</td><td>${p.correct}/${e.total}</td><td>${fmtTime(p.totalMs)}</td>${mmrCell}
+        const d = p.mmrDelta ?? p.mmr_delta ?? 0;
+        const m = p.mmr ?? p.mmr_after ?? '—';
+        const sign = d >= 0 ? '+' : '';
+        const mmrCell = `<td>${sign}${d} (${m})</td>`;
+        const isMe = p.id === me.id || p.username === me.username;
+        
+        return `<tr class="${isMe ? 'me' : ''}">
+          <td>${medal(p.place)}</td>
+          <td>${esc(p.username)}</td>
+          <td>${p.correct}/${totalQuestions}</td>
+          <td>${fmtTime(p.totalMs || p.total_time_ms)}</td>
+          ${mmrCell}
         </tr>`;
       })
       .join('');
-    if (mine && typeof mine.mmr === 'number') {
+      
+    // Обновляем бейдж MMR в меню (только если играли сейчас, а не смотрим историю)
+    if (e.ranking && mine && typeof mine.mmr === 'number') {
       me.mmr = mine.mmr;
       updateMmrBadge();
     }
+    
     lobby = null;
     show('results');
   }
-  $('#btn-results-menu').onclick = () => show('menu');
 
   // ---------- История ----------
   $('#btn-history').onclick = async () => {
