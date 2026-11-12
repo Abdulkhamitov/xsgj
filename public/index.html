@@ -29,10 +29,16 @@
 
   <!-- Главное меню -->
   <section id="screen-menu" class="screen">
-    <h2>Привет, <span id="hello"></span>! 👋</h2>
+    <h2>Привет, <span id="hello"></span>! 👋 <span id="my-mmr" class="mmr-badge"></span></h2>
     <div class="card menu">
+      <label class="qcount-row">Вопросов в игре:
+        <input id="solo-qcount" type="number" min="3" max="50" value="20">
+      </label>
       <button id="btn-solo" class="btn primary big">🎯 Играть одному</button>
       <button id="btn-friends" class="btn secondary big">👥 Играть с друзьями</button>
+      <button id="btn-quick" class="btn primary big">⚡ Быстрая игра</button>
+      <p id="quick-status" class="muted hidden">Ищем соперника…</p>
+      <button id="btn-quick-cancel" class="btn ghost hidden">Отменить поиск</button>
       <button id="btn-history" class="btn ghost big">📊 Мои игры</button>
       <button id="btn-logout" class="btn ghost">Выйти</button>
     </div>
@@ -42,6 +48,9 @@
   <section id="screen-friends" class="screen">
     <h2>Игра с друзьями</h2>
     <div class="card">
+      <label class="qcount-row">Вопросов в лобби:
+        <input id="friends-qcount" type="number" min="3" max="50" value="20">
+      </label>
       <button id="btn-create-lobby" class="btn primary big">➕ Создать лобби</button>
       <div class="divider">или введи код друга</div>
       <input id="join-code" type="text" placeholder="КОД" maxlength="5" class="code-input">
@@ -57,6 +66,7 @@
     <div class="card">
       <p class="muted">Код подключения — отправь его друзьям:</p>
       <div id="lobby-code" class="big-code">-----</div>
+      <p class="muted">Вопросов: <span id="lobby-qcount">20</span></p>
       <h3>Игроки (<span id="lobby-count">0</span>)</h3>
       <ul id="lobby-players" class="players"></ul>
       <button id="btn-start" class="btn primary big hidden">▶ Начать игру</button>
@@ -84,7 +94,7 @@
     <p id="my-place" class="my-place"></p>
     <div class="card wide">
       <table id="results-table">
-        <thead><tr><th>Место</th><th>Игрок</th><th>Верно</th><th>Время</th></tr></thead>
+        <thead><tr><th>Место</th><th>Игрок</th><th>Верно</th><th>Время</th><th>MMR</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
