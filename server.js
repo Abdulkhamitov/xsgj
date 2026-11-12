@@ -301,9 +301,26 @@ function closeQuestion(l) {
 }
 
 function computeMmrDeltas(ranking) {
-  const n = ranking.length;
-  const deltas = new Array(n).fill(0);
-  if (n === 0) return deltas;
+  const deltas = new Array(ranking.length).fill(0);
+  if (ranking.length === 0) return deltas;
+
+  for (let i = 0; i < ranking.length; i++) {
+    let delta = 0;
+    if (i === 0) delta = MMR_PLACE_POINTS[0];      // 1 место (+25)
+    else if (i === 1) delta = MMR_PLACE_POINTS[1]; // 2 место (+10)
+    else if (i === 2) delta = MMR_PLACE_POINTS[2]; // 3 место (-15)
+    else delta = MMR_PLACE_POINTS[3];              // 4+ место (-25)
+
+    // Защита: если у игрока 0 очков (новичок), он не может уйти в минус за 3-е/4-е место
+    const currentMmr = ranking[i].mmrStart ?? MMR_START;
+    if (currentMmr <= 0 && delta < 0) {
+       delta = 0;
+    }
+
+    deltas[i] = delta;
+  }
+  return deltas;
+}
 
   const base = ranking.map((_, i) => {
     if (i === 0) return MMR_PLACE_POINTS[0];
