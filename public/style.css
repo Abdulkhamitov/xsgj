@@ -143,3 +143,20 @@ tr.me td { color: var(--accent2); font-weight: 700; }
   font-weight: 600;
   opacity: .85;
 }
+/* ... твой существующий код в самом низу ... */
+.mmr {
+  color: var(--accent2);
+  font-size: 0.8em;
+  margin-left: 6px;
+  font-weight: 600;
+  opacity: .85;
+}
+
+/* Вставляем сюда: */
+#btn-quit-game {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+#btn-quit-game:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
