@@ -27,6 +27,14 @@
     return data;
   }
 
+  function readQuestionCount(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return 20;
+    const v = parseInt(el.value, 10);
+    if (!Number.isInteger(v) || v < 3 || v > 50) return 20;
+    return v;
+  }
+
   // ---------- Авторизация ----------
   function setAuthMode(mode) {
     authMode = mode;
@@ -59,8 +67,16 @@
   $('#auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
   $('#auth-username').addEventListener('keydown', e => { if (e.key === 'Enter') $('#auth-password').focus(); });
 
+  function updateMmrBadge() {
+    const el = $('#my-mmr');
+    if (el) el.textContent = (me && me.mmr != null) ? `${me.mmr} MMR` : '';
+  }
+
   function enterMenu() {
     $('#hello').textContent = me.username;
+    updateMmrBadge();
+    $('#quick-status').classList.add('hidden');
+    $('#btn-quick-cancel').classList.add('hidden');
     connectSocket();
     show('menu');
   }
@@ -95,6 +111,23 @@
       lobby = null;
       alert('Создатель закрыл лобби');
       show('menu');
+    });
+
+    // --- быстрая игра ---
+    socket.on('quick:waiting', () => {
+      $('#quick-status').textContent = 'Ищем соперника…';
+      $('#quick-status').classList.remove('hidden');
+      $('#btn-quick-cancel').classList.remove('hidden');
+    });
+
+    socket.on('quick:matched', () => {
+      $('#quick-status').textContent = 'Соперник найден! Заходим в лобби…';
+      $('#btn-quick-cancel').classList.add('hidden');
+    });
+
+    socket.on('quick:cancelled', () => {
+      $('#quick-status').classList.add('hidden');
+      $('#btn-quick-cancel').classList.add('hidden');
     });
 
     socket.on('game:started', () => {
@@ -169,15 +202,36 @@
 
   // ---------- Меню ----------
   $('#btn-solo').onclick = () => {
-    socket.emit('lobby:create', { mode: 'solo' }, res => {
+    const questionCount = readQuestionCount('solo-qcount');
+    socket.emit('lobby:create', { mode: 'solo', questionCount }, res => {
       if (!res.ok) alert(res.error || 'Не удалось начать игру');
     });
   };
   $('#btn-friends').onclick = () => { $('#friends-error').textContent = ''; $('#join-code').value = ''; show('friends'); };
   $('#btn-friends-back').onclick = () => show('menu');
 
+  $('#btn-quick').onclick = () => {
+    if (!socket) return;
+    $('#quick-status').textContent = 'Ищем соперника…';
+    $('#quick-status').classList.remove('hidden');
+    $('#btn-quick-cancel').classList.remove('hidden');
+    socket.emit('quick:play', {}, res => {
+      if (!res.ok) {
+        $('#quick-status').textContent = res.error || 'Ошибка';
+        $('#btn-quick-cancel').classList.add('hidden');
+      }
+    });
+  };
+  $('#btn-quick-cancel').onclick = () => {
+    if (!socket) return;
+    socket.emit('quick:cancel');
+    $('#quick-status').classList.add('hidden');
+    $('#btn-quick-cancel').classList.add('hidden');
+  };
+
   $('#btn-create-lobby').onclick = () => {
-    socket.emit('lobby:create', { mode: 'friends' }, res => {
+    const questionCount = readQuestionCount('friends-qcount');
+    socket.emit('lobby:create', { mode: 'friends', questionCount }, res => {
       if (!res.ok) $('#friends-error').textContent = res.error || 'Ошибка';
     });
   };
@@ -196,8 +250,13 @@
   function renderLobby() {
     $('#lobby-code').textContent = lobby.code;
     $('#lobby-count').textContent = lobby.players.length;
+    const qc = $('#lobby-qcount');
+    if (qc) qc.textContent = lobby.questionCount || 20;
     $('#lobby-players').innerHTML = lobby.players
-      .map(p => `<li>${esc(p.username)}${p.id === lobby.hostId ? '<span class="crown">👑</span>' : ''}</li>`)
+      .map(p => {
+        const mmr = (p.mmr != null) ? ` <span class="mmr">${p.mmr} MMR</span>` : '';
+        return `<li>${esc(p.username)}${mmr}${p.id === lobby.hostId ? '<span class="crown">👑</span>' : ''}</li>`;
+      })
       .join('');
     const isHost = lobby.hostId === me.id;
     $('#btn-start').classList.toggle('hidden', !isHost);
@@ -227,12 +286,26 @@
         </div>`)
       .join('');
     const mine = r.find(x => x.id === me.id);
-    $('#my-place').textContent = mine ? `Твоё место: ${mine.place} из ${r.length} • ${mine.correct}/${e.total} верно` : '';
+    let myText = mine ? `Твоё место: ${mine.place} из ${r.length} • ${mine.correct}/${e.total} верно` : '';
+    if (mine && typeof mine.mmrDelta === 'number') {
+      const sign = mine.mmrDelta >= 0 ? '+' : '';
+      myText += ` • MMR ${sign}${mine.mmrDelta} → ${mine.mmr}`;
+    }
+    $('#my-place').textContent = myText;
     $('#results-table tbody').innerHTML = r
-      .map(p => `<tr class="${p.id === me.id ? 'me' : ''}">
-          <td>${medal(p.place)}</td><td>${esc(p.username)}</td><td>${p.correct}/${e.total}</td><td>${fmtTime(p.totalMs)}</td>
-        </tr>`)
+      .map(p => {
+        const sign = (p.mmrDelta ?? 0) >= 0 ? '+' : '';
+        const mmrCell = (typeof p.mmrDelta === 'number')
+          ? `<td>${sign}${p.mmrDelta} (${p.mmr})</td>` : '<td>—</td>';
+        return `<tr class="${p.id === me.id ? 'me' : ''}">
+          <td>${medal(p.place)}</td><td>${esc(p.username)}</td><td>${p.correct}/${e.total}</td><td>${fmtTime(p.totalMs)}</td>${mmrCell}
+        </tr>`;
+      })
       .join('');
+    if (mine && typeof mine.mmr === 'number') {
+      me.mmr = mine.mmr;
+      updateMmrBadge();
+    }
     lobby = null;
     show('results');
   }
@@ -248,10 +321,14 @@
       if (!list.length) { box.innerHTML = '<p class="muted">Ты ещё не сыграл ни одной игры.</p>'; return; }
       box.innerHTML = list.map(g => {
         const date = new Date(g.created_at.replace(' ', 'T') + 'Z').toLocaleString('ru-RU');
-        const players = g.players.map(p => `${medal(p.place)} ${esc(p.username)} (${p.correct})`).join(' · ');
+        const players = g.players.map(p => {
+          const sign = (p.mmr_delta ?? 0) >= 0 ? '+' : '';
+          return `${medal(p.place)} ${esc(p.username)} (${p.correct}, ${sign}${p.mmr_delta ?? 0} MMR)`;
+        }).join(' · ');
+        const sign = (g.mmr_delta ?? 0) >= 0 ? '+' : '';
         return `<div class="hitem">
           <div class="row"><span class="place">${medal(g.place)} место из ${g.players_count}</span><span>${g.correct}/${g.total} верно</span></div>
-          <div class="small">${date} • ${modeName(g.mode)} • время ${fmtTime(g.total_time_ms)}</div>
+          <div class="small">${date} • ${modeName(g.mode)} • время ${fmtTime(g.total_time_ms)} • MMR ${sign}${g.mmr_delta ?? 0} (${g.mmr_after ?? '—'})</div>
           <div class="small">${players}</div>
         </div>`;
       }).join('');
