@@ -160,3 +160,9 @@ tr.me td { color: var(--accent2); font-weight: 700; }
 #btn-quit-game:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+.hitem {
+  transition: background 0.2s, transform 0.1s;
+}
+.hitem:active {
+  transform: scale(0.99);
+}
