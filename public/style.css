@@ -110,3 +110,36 @@ tr.me td { color: var(--accent2); font-weight: 700; }
 .hitem .row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .hitem .place { font-size: 20px; font-weight: 800; }
 .hitem .small { color: var(--muted); font-size: 13px; margin-top: 6px; }
+/* === MMR и количество вопросов === */
+.mmr-badge {
+  font-size: 0.55em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, .25);
+  color: var(--accent2);
+  vertical-align: middle;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.qcount-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.95em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.qcount-row input {
+  width: 90px;
+  padding: 8px 10px;
+  font-size: 15px;
+  text-align: center;
+}
+.mmr {
+  color: var(--accent2);
+  font-size: 0.8em;
+  margin-left: 6px;
+  font-weight: 600;
+  opacity: .85;
+}
