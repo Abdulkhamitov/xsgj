@@ -270,7 +270,14 @@
     lobby = null;
     show('menu');
   };
-
+  // ---------- Выход из игры ----------
+  $('#btn-quit-game').onclick = () => {
+    if (!confirm('Ты уверен, что хочешь выйти? Игра будет завершена.')) return;
+    if (socket) socket.emit('game:quit');
+    lobby = null;
+    show('menu');
+  };
+  
   // ---------- Результаты ----------
   function renderResults(e) {
     const r = e.ranking;
