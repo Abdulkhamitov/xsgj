@@ -16,7 +16,7 @@ const MAX_QUESTIONS = 50;
 const TIME_LIMIT = 15000;
 const REVEAL_MS = 2500;
 
-const MMR_START = 1000;
+const MMR_START = 0;
 const MMR_PLACE_POINTS = [25, 10, -15, -25];
 
 const db = new Database(DB_PATH);
