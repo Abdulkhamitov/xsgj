@@ -342,13 +342,14 @@
   }
 
   // ---------- История ----------
-  $('#btn-history').onclick = async () => {
+    $('#btn-history').onclick = async () => {
     show('history');
     const box = $('#history-list');
     box.innerHTML = '<p class="muted">Загрузка…</p>';
     try {
       const list = await api('/api/history');
       if (!list.length) { box.innerHTML = '<p class="muted">Ты ещё не сыграл ни одной игры.</p>'; return; }
+      
       box.innerHTML = list.map(g => {
         const date = new Date(g.created_at.replace(' ', 'T') + 'Z').toLocaleString('ru-RU');
         const players = g.players.map(p => {
@@ -356,12 +357,40 @@
           return `${medal(p.place)} ${esc(p.username)} (${p.correct}, ${sign}${p.mmr_delta ?? 0} MMR)`;
         }).join(' · ');
         const sign = (g.mmr_delta ?? 0) >= 0 ? '+' : '';
-        return `<div class="hitem">
+        
+        // Добавили data-id="${g.id}", чтобы знать, какую игру открывать
+        return `<div class="hitem" data-id="${g.id}" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background=''">
           <div class="row"><span class="place">${medal(g.place)} место из ${g.players_count}</span><span>${g.correct}/${g.total} верно</span></div>
           <div class="small">${date} • ${modeName(g.mode)} • время ${fmtTime(g.total_time_ms)} • MMR ${sign}${g.mmr_delta ?? 0} (${g.mmr_after ?? '—'})</div>
           <div class="small">${players}</div>
         </div>`;
       }).join('');
+
+      // Добавляем обработчик клика на каждую карточку
+      document.querySelectorAll('.hitem').forEach(el => {
+        el.onclick = () => {
+          const id = Number(el.dataset.id);
+          const game = list.find(g => g.id === id);
+          if (game) {
+            // Передаем данные из истории в тот же рендер, что и итоги игры
+            renderResults({
+              players: game.players,
+              total_questions: game.total,
+              // MMR в историческом логе относится к тебе, поэтому подставляем
+              // твои данные, чтобы блок "Твоё место" отрисовался корректно
+              ranking: game.players.map(p => ({
+                 ...p,
+                 totalMs: p.total_time_ms,
+                 mmrDelta: p.mmr_delta,
+                 mmr: p.mmr_after,
+                 // В истории нет ID, поэтому привязываем "me" по нику
+                 id: p.username === me.username ? me.id : null 
+              }))
+            });
+          }
+        };
+      });
+
     } catch (e) {
       box.innerHTML = `<p class="error">${esc(e.message)}</p>`;
     }
