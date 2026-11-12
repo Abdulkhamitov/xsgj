@@ -550,7 +550,36 @@ io.on('connection', socket => {
     leaveQuickQueue(socket.id);
     socket.emit('quick:cancelled');
   });
+  socket.on('game:quit', () => {
+    const l = lobbies.get(socket.lobbyCode);
+    if (!l) return;
 
+    // Если игра ещё не началась (в лобби) — просто выходим из лобби
+    if (l.state === 'waiting') {
+      leaveLobby(socket);
+      return;
+    }
+
+    // Если игра идёт:
+    const p = l.players.get(socket.user.id);
+    if (p) {
+      p.connected = false; // помечаем, что игрок вышел
+    }
+
+    // Если это соло-игра, или если вышли ВСЕ игроки — завершаем игру
+    const active = activePlayers(l);
+    if (l.mode === 'solo' || active.length === 0) {
+      // Принудительно завершаем игру, сохраняем результаты тех, кто остался
+      finishGame(l);
+    } else {
+      // Если играли с друзьями и кто-то остался — просто отключаем вышедшего
+      // Проверяем, не ответили ли уже все оставшиеся на текущий вопрос
+      if (l.qOpen && allAnswered(l)) {
+        closeQuestion(l);
+      }
+    }
+  });
+  
   socket.on('game:answer', data => {
     const l = lobbies.get(socket.lobbyCode);
     if (!l || l.state !== 'playing' || !l.qOpen) return;
