@@ -372,6 +372,10 @@
           const id = Number(el.dataset.id);
           const game = list.find(g => g.id === id);
           if (game) {
+            renderResults({ ... }); // внутри передаются данные
+          }
+        };
+      });
             // Передаем данные из истории в тот же рендер, что и итоги игры
             renderResults({
               players: game.players,
